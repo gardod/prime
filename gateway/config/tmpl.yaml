@@ -1,0 +1,7 @@
+"server":
+    "port": 80
+    "read_timeout": 15
+    "write_timeout": 15
+    "idle_timeout": 60
+"prime":
+    "address": "localhost:80"

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option go_package = "tratnik.net/proto";
+
+service Prime {
+  rpc Validate (ValidationRequest) returns (ValidationResponse) {}
+}
+
+message ValidationRequest {
+  int64 number = 1;
+}
+
+message ValidationResponse {
+  bool is_prime = 1;
+}

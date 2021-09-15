@@ -1,0 +1,77 @@
+version: "3.7"
+
+networks:
+    demo-net:
+
+volumes:
+    postgres-data:
+
+services:
+    gateway:
+        build:
+            context: ./gateway
+            dockerfile: ./build/Dockerfile
+        networks:
+            - demo-net
+        depends_on:
+            - prime
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.gateway.rule=Host(`gateway.lvh.me`)
+            - traefik.http.routers.gateway.entrypoints=web
+            - traefik.http.services.gateway.loadbalancer.server.port=9000
+            - traefik.http.services.gateway.loadbalancer.server.scheme=h2c
+
+    prime:
+        build:
+            context: ./prime
+            dockerfile: ./build/Dockerfile
+        deploy:
+            replicas: 3
+        networks:
+            - demo-net
+        depends_on:
+            - postgres
+
+    postgres:
+        image: postgres:12-alpine
+        networks:
+            - demo-net
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_DB=postgres
+
+    adminer:
+        image: adminer:4
+        networks:
+            - demo-net
+        environment:
+            - ADMINER_DESIGN=nette
+            - ADMINER_PLUGINS=tables-filter
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.adminer.rule=Host(`adminer.lvh.me`)
+            - traefik.http.routers.adminer.entrypoints=web
+
+    traefik:
+        image: traefik:2.1
+        ports:
+            - 80:80
+        networks:
+            - demo-net
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - TRAEFIK_PROVIDERS_DOCKER=true
+            - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+            - TRAEFIK_ENTRYPOINTS_WEB=true
+            - TRAEFIK_ENTRYPOINTS_WEB_ADDRESS=:80
+            - TRAEFIK_API_DASHBOARD=true
+        labels:
+            - traefik.enable=true
+            - traefik.http.routers.traefik.rule=Host(`traefik.lvh.me`)
+            - traefik.http.routers.traefik.service=api@internal
+            - traefik.http.routers.traefik.entrypoints=web

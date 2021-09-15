@@ -1,0 +1,13 @@
+"server":
+    "port": 80
+"database":
+    "host": "127.0.0.1"
+    "port": 5432
+    "user": ""
+    "password": ""
+    "db_name": ""
+    "ssl_mode": "require"
+    "max_open_conns": 0
+    "max_idle_conns": 2
+    "conn_max_lifetime": 0
+    "migrate_source": ""
